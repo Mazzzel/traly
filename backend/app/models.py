@@ -29,7 +29,9 @@ class Trade(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"))
     symbol: Mapped[str] = mapped_column(String(20))
-    direction: Mapped[TradeDirection] = mapped_column(Enum(TradeDirection))
+    direction: Mapped[TradeDirection] = mapped_column(
+        Enum(TradeDirection, values_callable=lambda enum_cls: [e.value for e in enum_cls])
+    )
     entry_price: Mapped[float] = mapped_column(Numeric(14, 5))
     exit_price: Mapped[float | None] = mapped_column(Numeric(14, 5), nullable=True)
     stop_loss: Mapped[float | None] = mapped_column(Numeric(14, 5), nullable=True)
