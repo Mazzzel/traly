@@ -25,6 +25,12 @@ uvicorn app.main:app --reload
 
 Nécessite une base PostgreSQL locale (voir `infra/docker-compose.yml` pour la config, ou un Postgres local avec les mêmes identifiants dans `backend/.env`).
 
+Appliquer les migrations avant de démarrer l'API :
+
+```bash
+alembic upgrade head
+```
+
 ### Frontend
 
 ```bash
