@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Env
+.env
+!infra/.env.example
+
+# Docker
+infra/docker-compose.override.yml
+
+# OS
+.DS_Store
