@@ -12,14 +12,32 @@ class TradeDirection(str, enum.Enum):
     SELL = "sell"
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True)
+    password_hash: Mapped[str] = mapped_column(String(60))
+    must_change_password: Mapped[bool] = mapped_column(default=True)
+    is_admin: Mapped[bool] = mapped_column(default=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))
+    last_login_at: Mapped[datetime.datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+    accounts: Mapped[list["Account"]] = relationship(back_populates="user")
+
+
 class Account(Base):
     __tablename__ = "accounts"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     name: Mapped[str] = mapped_column(String(120))
     broker: Mapped[str] = mapped_column(String(120))
     initial_balance: Mapped[float] = mapped_column(Numeric(14, 2))
 
+    user: Mapped["User"] = relationship(back_populates="accounts")
     trades: Mapped[list["Trade"]] = relationship(back_populates="account")
 
 

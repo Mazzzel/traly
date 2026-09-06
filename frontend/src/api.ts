@@ -25,18 +25,61 @@ export interface Trade {
   notes: string | null
 }
 
+export interface User {
+  id: number
+  email: string
+  must_change_password: boolean
+  is_admin: boolean
+}
+
 export type NewAccount = Omit<Account, 'id'>
 export type NewTrade = Omit<Trade, 'id'>
 
+const TOKEN_KEY = 'traly_token'
+
+export const getToken = () => localStorage.getItem(TOKEN_KEY)
+export const setToken = (token: string) => localStorage.setItem(TOKEN_KEY, token)
+export const clearToken = () => localStorage.removeItem(TOKEN_KEY)
+
+class ApiError extends Error {
+  status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.status = status
+  }
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = getToken()
   const res = await fetch(`${API_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     ...options,
   })
-  if (!res.ok) throw new Error(`${options?.method ?? 'GET'} ${path} failed: ${res.status}`)
+  if (!res.ok) {
+    if (res.status === 401) clearToken()
+    throw new ApiError(`${options?.method ?? 'GET'} ${path} failed: ${res.status}`, res.status)
+  }
   if (res.status === 204) return undefined as T
   return res.json()
 }
+
+export const login = (email: string, password: string) =>
+  request<{ token: string; must_change_password: boolean }>('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  })
+
+export const changePassword = (current_password: string, new_password: string) =>
+  request<{ token: string; must_change_password: boolean }>('/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify({ current_password, new_password }),
+  })
+
+export const fetchMe = () => request<User>('/auth/me')
 
 export const fetchAccounts = () => request<Account[]>('/accounts/')
 export const createAccount = (account: NewAccount) =>

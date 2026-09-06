@@ -47,3 +47,17 @@ cd infra
 cp .env.example .env   # renseigner les mots de passe
 docker compose up -d --build
 ```
+
+## Comptes utilisateurs
+
+Pas d'inscription publique : chaque compte est créé à la main, avec un mot de passe
+temporaire que l'utilisateur devra changer à sa première connexion.
+
+```bash
+# Sur le Pi, ou en local avec le venv backend activé
+docker compose exec backend python -m app.scripts.create_user alice@example.com
+# demande un mot de passe temporaire, puis crée l'utilisateur
+```
+
+Ajouter `--admin` pour un compte administrateur (pas encore utilisé par l'API, réservé
+pour de futures fonctionnalités d'administration).

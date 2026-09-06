@@ -44,3 +44,27 @@ class TradeOut(TradeBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class LoginResponse(BaseModel):
+    token: str
+    must_change_password: bool
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+class UserOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    email: str
+    must_change_password: bool
+    is_admin: bool
