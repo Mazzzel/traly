@@ -17,8 +17,7 @@ services:
 
   backend:
     build:
-      context: ..
-      dockerfile: backend/Dockerfile
+      context: ../backend
     image: ${BACKEND_IMAGE:-trading-backend:local}
     container_name: backend
     restart: unless-stopped
