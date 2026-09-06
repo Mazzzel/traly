@@ -1,0 +1,1 @@
+tradingbot ALL=(root) NOPASSWD: /sbin/shutdown -h now

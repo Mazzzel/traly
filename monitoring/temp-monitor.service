@@ -1,0 +1,8 @@
+[Unit]
+Description=CPU temperature monitor (one-shot check)
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/temp-monitor.env
+ExecStart=/usr/bin/python3 /home/tradingbot/traly/monitoring/temp_monitor.py
