@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createTrade, type Account, type Trade, type TradeDirection } from './api'
 
 export function NewTradeForm({
@@ -8,7 +8,14 @@ export function NewTradeForm({
   accounts: Account[]
   onCreated: (trade: Trade) => void
 }) {
-  const [accountId, setAccountId] = useState<string>(String(accounts[0]?.id ?? ''))
+  const [accountId, setAccountId] = useState<string>('')
+
+  useEffect(() => {
+    if (accounts.length === 0) return
+    if (!accounts.some((a) => String(a.id) === accountId)) {
+      setAccountId(String(accounts[0].id))
+    }
+  }, [accounts, accountId])
   const [symbol, setSymbol] = useState('')
   const [direction, setDirection] = useState<TradeDirection>('buy')
   const [entryPrice, setEntryPrice] = useState('')
