@@ -17,3 +17,6 @@ infra/docker-compose.override.yml
 
 # OS
 .DS_Store
+
+# Claude Code local tooling state (not project content)
+.claude/
