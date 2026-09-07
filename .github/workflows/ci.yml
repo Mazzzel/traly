@@ -30,3 +30,16 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm run build
+
+  deploy:
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: [self-hosted, pi]
+    steps:
+      - name: Pull latest and redeploy
+        run: |
+          cd ~/traly
+          git pull
+          cd infra
+          docker compose up -d --build
+          docker image prune -f
