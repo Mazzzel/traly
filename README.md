@@ -61,3 +61,12 @@ docker compose exec backend python -m app.scripts.create_user alice@example.com
 
 Ajouter `--admin` pour un compte administrateur (pas encore utilisé par l'API, réservé
 pour de futures fonctionnalités d'administration).
+
+## Déploiement
+
+Un runner GitHub Actions self-hosted tourne en service systemd sur le Pi
+(`~/actions-runner`). À chaque push sur `main`, après que les jobs CI (build
+backend/frontend) passent, le job `deploy` s'exécute directement sur le Pi :
+`git pull` + `docker compose up -d --build` + nettoyage des anciennes images.
+Aucun accès SSH entrant n'est nécessaire — le runner va chercher le job chez
+GitHub en sortant.
