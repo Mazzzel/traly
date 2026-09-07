@@ -279,7 +279,7 @@ function App() {
                           />
                         )}
                         <button
-                          className="btn-ghost-small"
+                          className="btn-ghost-danger"
                           type="button"
                           onClick={async () => {
                             if (!confirm(`Supprimer le trade ${trade.symbol} ?`)) return
