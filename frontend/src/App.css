@@ -506,7 +506,14 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
 .col-pnl.gain { color: var(--gain); }
 .col-pnl.loss { color: var(--loss); }
 .col-pnl.be { color: var(--ink-muted); }
-.col-pnl.open { color: var(--ink-faint); font-weight: 400; font-style: normal; }
+.col-pnl.open {
+  color: var(--accent);
+  font-weight: 700;
+  background: var(--surface-sunken);
+  border-radius: 4px;
+  padding: 2px 7px;
+  justify-self: end;
+}
 
 .trade-detail {
   margin: 0 4px 16px;
@@ -569,6 +576,7 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
   gap: 5px;
   font-size: 11.5px;
   color: var(--ink-muted);
+  width: 160px;
 }
 .form-card input, .form-card select {
   font-family: inherit;
@@ -578,7 +586,7 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
   border: 1px solid var(--hairline);
   border-radius: 6px;
   padding: 7px 9px;
-  min-width: 120px;
+  width: 100%;
 }
 .form-card input:focus, .form-card select:focus { outline: 2px solid var(--focus); outline-offset: 1px; }
 .form-card [role="alert"] { width: 100%; color: var(--loss); font-size: 12.5px; }

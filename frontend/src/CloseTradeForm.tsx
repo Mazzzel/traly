@@ -75,9 +75,9 @@ export function CloseTradeForm({
         <span style={{ fontSize: 12, color: 'var(--ink-muted)' }}>Restant: {remaining}</span>
         <input
           type="number"
-          min="0.001"
+          min="0"
           max="100"
-          step="1"
+          step="any"
           title="% du lot restant à clôturer sur cette sortie (100 = clôture totale)"
           placeholder="%"
           value={percent}
