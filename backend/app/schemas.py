@@ -33,6 +33,7 @@ class TradeBase(BaseModel):
     pnl: float | None = None
     opened_at: datetime.datetime
     closed_at: datetime.datetime | None = None
+    is_breakeven: bool = False
     notes: str | None = None
 
 
@@ -40,16 +41,31 @@ class TradeCreate(TradeBase):
     pass
 
 
+class TradeExitOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    sequence: int
+    percent_of_remaining: float
+    size_closed: float
+    exit_price: float
+    pnl: float
+    closed_at: datetime.datetime
+
+
 class TradeOut(TradeBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    exits: list[TradeExitOut] = []
 
 
-class TradeClose(BaseModel):
+class TradeExitCreate(BaseModel):
+    percent_of_remaining: float
     exit_price: float
     pnl: float
     closed_at: datetime.datetime | None = None
+    is_breakeven: bool = False
 
 
 class EquityPoint(BaseModel):
@@ -60,13 +76,47 @@ class EquityPoint(BaseModel):
 class AccountStats(BaseModel):
     total_trades: int
     closed_trades: int
+    winning_trades: int
+    losing_trades: int
     win_rate: float | None
     profit_factor: float | None
+    total_gain: float | None
+    total_loss: float | None
+    expectancy: float | None
+    max_drawdown: float | None
     avg_win: float | None
     avg_loss: float | None
     best_trade: float | None
     worst_trade: float | None
+    max_win_streak: int
+    max_loss_streak: int
+    avg_trade_duration_seconds: float | None
     equity_curve: list[EquityPoint]
+    period_start_balance: float
+    period_start_at: datetime.datetime | None
+
+
+class WithdrawalCreate(BaseModel):
+    amount: float
+    withdrawn_at: datetime.datetime | None = None
+
+
+class WithdrawalOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    account_id: int
+    amount: float
+    balance_after: float
+    withdrawn_at: datetime.datetime
+
+
+class ArchivePeriod(BaseModel):
+    withdrawal: WithdrawalOut
+    period_start_at: datetime.datetime | None
+    trades: list[TradeOut]
+    trade_count: int
+    pnl: float
 
 
 class SymbolSpecUpsert(BaseModel):

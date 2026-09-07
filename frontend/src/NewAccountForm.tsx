@@ -26,8 +26,8 @@ export function NewAccountForm({ onCreated }: { onCreated: (account: Account) =>
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Nouveau compte</h2>
+    <form className="form-card" onSubmit={handleSubmit}>
+      <h3>Nouveau compte</h3>
       {error && <p role="alert">Erreur: {error}</p>}
       <label>
         Nom
@@ -47,7 +47,7 @@ export function NewAccountForm({ onCreated }: { onCreated: (account: Account) =>
           required
         />
       </label>
-      <button type="submit">Créer le compte</button>
+      <button className="btn-accent" type="submit">Créer le compte</button>
     </form>
   )
 }

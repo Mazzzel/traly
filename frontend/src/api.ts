@@ -9,6 +9,16 @@ export interface Account {
   initial_balance: number
 }
 
+export interface TradeExit {
+  id: number
+  sequence: number
+  percent_of_remaining: number
+  size_closed: number
+  exit_price: number
+  pnl: number
+  closed_at: string
+}
+
 export interface Trade {
   id: number
   account_id: number
@@ -22,7 +32,9 @@ export interface Trade {
   pnl: number | null
   opened_at: string
   closed_at: string | null
+  is_breakeven: boolean
   notes: string | null
+  exits: TradeExit[]
 }
 
 export interface User {
@@ -40,13 +52,40 @@ export interface EquityPoint {
 export interface AccountStats {
   total_trades: number
   closed_trades: number
+  winning_trades: number
+  losing_trades: number
   win_rate: number | null
   profit_factor: number | null
+  total_gain: number | null
+  total_loss: number | null
+  expectancy: number | null
+  max_drawdown: number | null
   avg_win: number | null
   avg_loss: number | null
   best_trade: number | null
   worst_trade: number | null
+  max_win_streak: number
+  max_loss_streak: number
+  avg_trade_duration_seconds: number | null
   equity_curve: EquityPoint[]
+  period_start_balance: number
+  period_start_at: string | null
+}
+
+export interface Withdrawal {
+  id: number
+  account_id: number
+  amount: number
+  balance_after: number
+  withdrawn_at: string
+}
+
+export interface ArchivePeriod {
+  withdrawal: Withdrawal
+  period_start_at: string | null
+  trades: Trade[]
+  trade_count: number
+  pnl: number
 }
 
 export interface SymbolSpec {
@@ -56,7 +95,7 @@ export interface SymbolSpec {
 }
 
 export type NewAccount = Omit<Account, 'id'>
-export type NewTrade = Omit<Trade, 'id'>
+export type NewTrade = Omit<Trade, 'id' | 'exits'>
 
 const TOKEN_KEY = 'traly_token'
 
@@ -111,10 +150,23 @@ export const createAccount = (account: NewAccount) =>
 export const fetchTrades = () => request<Trade[]>('/trades/')
 export const createTrade = (trade: NewTrade) =>
   request<Trade>('/trades/', { method: 'POST', body: JSON.stringify(trade) })
-export const closeTrade = (tradeId: number, exitPrice: number, pnl: number, closedAt?: string) =>
-  request<Trade>(`/trades/${tradeId}/close`, {
+export const addTradeExit = (
+  tradeId: number,
+  percentOfRemaining: number,
+  exitPrice: number,
+  pnl: number,
+  isBreakeven = false,
+  closedAt?: string,
+) =>
+  request<Trade>(`/trades/${tradeId}/exits`, {
     method: 'POST',
-    body: JSON.stringify({ exit_price: exitPrice, pnl, closed_at: closedAt ?? null }),
+    body: JSON.stringify({
+      percent_of_remaining: percentOfRemaining,
+      exit_price: exitPrice,
+      pnl,
+      closed_at: closedAt ?? null,
+      is_breakeven: isBreakeven,
+    }),
   })
 
 export const deleteTrade = (tradeId: number) =>
@@ -123,6 +175,16 @@ export const deleteTrade = (tradeId: number) =>
 export const fetchAccountStats = (accountId: number) =>
   request<AccountStats>(`/accounts/${accountId}/stats`)
 export const fetchOverallStats = () => request<AccountStats>('/accounts/stats')
+
+export const fetchWithdrawals = (accountId: number) =>
+  request<Withdrawal[]>(`/accounts/${accountId}/withdrawals`)
+export const createWithdrawal = (accountId: number, amount: number) =>
+  request<Withdrawal>(`/accounts/${accountId}/withdrawals`, {
+    method: 'POST',
+    body: JSON.stringify({ amount }),
+  })
+export const fetchArchives = (accountId: number) =>
+  request<ArchivePeriod[]>(`/accounts/${accountId}/archives`)
 
 export const fetchSymbolSpecs = () => request<SymbolSpec[]>('/symbol-specs/')
 export const upsertSymbolSpec = (symbol: string, contractSize: number) =>

@@ -40,6 +40,7 @@ export function NewTradeForm({
         pnl: null,
         opened_at: new Date().toISOString(),
         closed_at: null,
+        is_breakeven: false,
         notes: null,
       })
       onCreated(trade)
@@ -56,8 +57,8 @@ export function NewTradeForm({
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Nouveau trade</h2>
+    <form className="form-card" onSubmit={handleSubmit}>
+      <h3>Nouveau trade</h3>
       {error && <p role="alert">Erreur: {error}</p>}
       <label>
         Compte
@@ -110,7 +111,7 @@ export function NewTradeForm({
           required
         />
       </label>
-      <button type="submit">Enregistrer le trade</button>
+      <button className="btn-accent" type="submit">Enregistrer le trade</button>
     </form>
   )
 }

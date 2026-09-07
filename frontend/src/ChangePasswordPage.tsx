@@ -19,8 +19,8 @@ export function ChangePasswordPage({ onChanged }: { onChanged: () => void }) {
   }
 
   return (
-    <main>
-      <h1>Changement de mot de passe obligatoire</h1>
+    <div className="auth-shell">
+      <h1>Nouveau mot de passe</h1>
       <p>Première connexion : choisis un nouveau mot de passe avant de continuer.</p>
       <form onSubmit={handleSubmit}>
         {error && <p role="alert">{error}</p>}
@@ -43,8 +43,8 @@ export function ChangePasswordPage({ onChanged }: { onChanged: () => void }) {
             required
           />
         </label>
-        <button type="submit">Valider</button>
+        <button className="btn-accent" type="submit">Valider</button>
       </form>
-    </main>
+    </div>
   )
 }

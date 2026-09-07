@@ -19,8 +19,9 @@ export function LoginPage({ onLoggedIn }: { onLoggedIn: (mustChangePassword: boo
   }
 
   return (
-    <main>
-      <h1>Connexion</h1>
+    <div className="auth-shell">
+      <h1>Traly</h1>
+      <p>Connecte-toi pour accéder à ton journal de trading.</p>
       <form onSubmit={handleSubmit}>
         {error && <p role="alert">{error}</p>}
         <label>
@@ -36,8 +37,8 @@ export function LoginPage({ onLoggedIn }: { onLoggedIn: (mustChangePassword: boo
             required
           />
         </label>
-        <button type="submit">Se connecter</button>
+        <button className="btn-accent" type="submit">Se connecter</button>
       </form>
-    </main>
+    </div>
   )
 }

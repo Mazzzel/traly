@@ -74,20 +74,50 @@ def delete_trade(
     db.commit()
 
 
-@router.post("/{trade_id}/close", response_model=schemas.TradeOut)
-def close_trade(
+EPSILON = 1e-6
+
+
+@router.post("/{trade_id}/exits", response_model=schemas.TradeOut)
+def add_trade_exit(
     trade_id: int,
-    payload: schemas.TradeClose,
+    payload: schemas.TradeExitCreate,
     db: Session = Depends(get_db),
     user: models.User = Depends(require_active_user),
 ):
     trade = _get_owned_trade(trade_id, db, user)
     if trade.closed_at is not None:
         raise HTTPException(status_code=400, detail="Trade already closed")
+    if not (0 < payload.percent_of_remaining <= 100 + EPSILON):
+        raise HTTPException(status_code=422, detail="percent_of_remaining must be in (0, 100]")
+
+    remaining_before = float(trade.size) - sum(float(e.size_closed) for e in trade.exits)
+    if remaining_before <= EPSILON:
+        raise HTTPException(status_code=400, detail="No remaining size left on this trade")
+    pnl_before = sum(float(e.pnl) for e in trade.exits)
+
+    percent = min(payload.percent_of_remaining, 100.0)
+    size_closed = remaining_before if percent >= 100 - 1e-3 else remaining_before * (percent / 100)
+    remaining_after = remaining_before - size_closed
+
+    closed_at = payload.closed_at or datetime.datetime.now(datetime.timezone.utc)
+
+    exit_ = models.TradeExit(
+        trade_id=trade.id,
+        sequence=len(trade.exits) + 1,
+        percent_of_remaining=percent,
+        size_closed=size_closed,
+        exit_price=payload.exit_price,
+        pnl=payload.pnl,
+        closed_at=closed_at,
+    )
+    db.add(exit_)
+    db.flush()
 
     trade.exit_price = payload.exit_price
-    trade.pnl = payload.pnl
-    trade.closed_at = payload.closed_at or datetime.datetime.now(datetime.timezone.utc)
+    trade.pnl = pnl_before + payload.pnl
+    if remaining_after <= EPSILON:
+        trade.closed_at = closed_at
+        trade.is_breakeven = payload.is_breakeven
 
     db.commit()
     db.refresh(trade)
