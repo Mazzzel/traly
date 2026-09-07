@@ -3,9 +3,11 @@ import { createTrade, type Account, type Trade, type TradeDirection } from './ap
 
 export function NewTradeForm({
   accounts,
+  knownSymbols,
   onCreated,
 }: {
   accounts: Account[]
+  knownSymbols: string[]
   onCreated: (trade: Trade) => void
 }) {
   const [accountId, setAccountId] = useState<string>('')
@@ -69,7 +71,17 @@ export function NewTradeForm({
       </label>
       <label>
         Symbole
-        <input value={symbol} onChange={(e) => setSymbol(e.target.value)} required />
+        <input
+          value={symbol}
+          onChange={(e) => setSymbol(e.target.value)}
+          list="known-symbols"
+          required
+        />
+        <datalist id="known-symbols">
+          {knownSymbols.map((s) => (
+            <option key={s} value={s} />
+          ))}
+        </datalist>
       </label>
       <label>
         Sens

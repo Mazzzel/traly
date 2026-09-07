@@ -75,11 +75,12 @@ function App() {
       <section>
         <NewTradeForm
           accounts={accounts}
+          knownSymbols={[...new Set(trades.map((t) => t.symbol))].sort()}
           onCreated={(trade) => setTrades((prev) => [trade, ...prev])}
         />
       </section>
 
-      <StatsPanel accounts={accounts} />
+      <StatsPanel accounts={accounts} trades={trades} />
 
       <section>
         <h2>Trades</h2>

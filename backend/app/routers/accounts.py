@@ -28,18 +28,8 @@ def create_account(
     return db_account
 
 
-@router.get("/{account_id}/stats", response_model=schemas.AccountStats)
-def account_stats(
-    account_id: int,
-    db: Session = Depends(get_db),
-    user: models.User = Depends(require_active_user),
-):
-    account = db.get(models.Account, account_id)
-    if account is None or account.user_id != user.id:
-        raise HTTPException(status_code=404, detail="Account not found")
-
-    all_trades = db.query(models.Trade).filter(models.Trade.account_id == account_id).all()
-    closed = [t for t in all_trades if t.closed_at is not None and t.pnl is not None]
+def _compute_stats(trades: list[models.Trade]) -> schemas.AccountStats:
+    closed = [t for t in trades if t.closed_at is not None and t.pnl is not None]
     closed.sort(key=lambda t: t.closed_at)
 
     wins = [float(t.pnl) for t in closed if float(t.pnl) > 0]
@@ -56,7 +46,7 @@ def account_stats(
     gross_loss = abs(sum(losses))
 
     return schemas.AccountStats(
-        total_trades=len(all_trades),
+        total_trades=len(trades),
         closed_trades=len(closed),
         win_rate=len(wins) / len(closed) if closed else None,
         profit_factor=(gross_win / gross_loss) if gross_loss > 0 else None,
@@ -66,3 +56,30 @@ def account_stats(
         worst_trade=min(pnls) if pnls else None,
         equity_curve=equity_curve,
     )
+
+
+@router.get("/stats", response_model=schemas.AccountStats)
+def overall_stats(
+    db: Session = Depends(get_db), user: models.User = Depends(require_active_user)
+):
+    trades = (
+        db.query(models.Trade)
+        .join(models.Account)
+        .filter(models.Account.user_id == user.id)
+        .all()
+    )
+    return _compute_stats(trades)
+
+
+@router.get("/{account_id}/stats", response_model=schemas.AccountStats)
+def account_stats(
+    account_id: int,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(require_active_user),
+):
+    account = db.get(models.Account, account_id)
+    if account is None or account.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    trades = db.query(models.Trade).filter(models.Trade.account_id == account_id).all()
+    return _compute_stats(trades)

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import { fetchAccountStats, type Account, type AccountStats } from './api'
+import { fetchAccountStats, fetchOverallStats, type Account, type AccountStats, type Trade } from './api'
 import { EquityChart } from './EquityChart'
+
+const ALL_ACCOUNTS = 'all'
 
 function formatMoney(value: number | null): string {
   if (value === null) return '—'
@@ -33,24 +35,16 @@ function StatTile({
   )
 }
 
-export function StatsPanel({ accounts }: { accounts: Account[] }) {
-  const [accountId, setAccountId] = useState<string>('')
+export function StatsPanel({ accounts, trades }: { accounts: Account[]; trades: Trade[] }) {
+  const [scope, setScope] = useState<string>(ALL_ACCOUNTS)
   const [stats, setStats] = useState<AccountStats | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (accounts.length === 0) return
-    if (!accounts.some((a) => String(a.id) === accountId)) {
-      setAccountId(String(accounts[0].id))
-    }
-  }, [accounts, accountId])
-
-  useEffect(() => {
-    if (!accountId) return
-    fetchAccountStats(Number(accountId))
-      .then(setStats)
-      .catch((err) => setError(err.message))
-  }, [accountId])
+    const fetcher = scope === ALL_ACCOUNTS ? fetchOverallStats() : fetchAccountStats(Number(scope))
+    fetcher.then(setStats).catch((err) => setError(err.message))
+    // `trades` en dépendance : refetch dès qu'un trade est créé/clôturé ailleurs sur la page.
+  }, [scope, trades])
 
   if (accounts.length === 0) {
     return null
@@ -62,7 +56,8 @@ export function StatsPanel({ accounts }: { accounts: Account[] }) {
       {error && <p role="alert">Erreur: {error}</p>}
       <label>
         Compte
-        <select value={accountId} onChange={(e) => setAccountId(e.target.value)}>
+        <select value={scope} onChange={(e) => setScope(e.target.value)}>
+          <option value={ALL_ACCOUNTS}>Tous les comptes</option>
           {accounts.map((account) => (
             <option key={account.id} value={account.id}>
               {account.name}

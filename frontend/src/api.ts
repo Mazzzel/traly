@@ -113,3 +113,4 @@ export const closeTrade = (tradeId: number, exitPrice: number, closedAt?: string
 
 export const fetchAccountStats = (accountId: number) =>
   request<AccountStats>(`/accounts/${accountId}/stats`)
+export const fetchOverallStats = () => request<AccountStats>('/accounts/stats')
