@@ -4,6 +4,8 @@ import { LoginPage } from './LoginPage'
 import { ChangePasswordPage } from './ChangePasswordPage'
 import { NewAccountForm } from './NewAccountForm'
 import { NewTradeForm } from './NewTradeForm'
+import { CloseTradeForm } from './CloseTradeForm'
+import { StatsPanel } from './StatsPanel'
 import './App.css'
 
 type AuthState = 'loading' | 'anonymous' | 'must-change-password' | 'authenticated'
@@ -77,6 +79,8 @@ function App() {
         />
       </section>
 
+      <StatsPanel accounts={accounts} />
+
       <section>
         <h2>Trades</h2>
         {trades.length === 0 && <p>Aucun trade enregistré pour le moment.</p>}
@@ -90,6 +94,7 @@ function App() {
                 <th>Sortie</th>
                 <th>PnL</th>
                 <th>Ouvert le</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -99,8 +104,20 @@ function App() {
                   <td>{trade.direction}</td>
                   <td>{trade.entry_price}</td>
                   <td>{trade.exit_price ?? '—'}</td>
-                  <td>{trade.pnl ?? '—'}</td>
+                  <td style={{ color: trade.pnl === null ? undefined : trade.pnl >= 0 ? 'var(--delta-good)' : 'var(--delta-bad)' }}>
+                    {trade.pnl ?? '—'}
+                  </td>
                   <td>{new Date(trade.opened_at).toLocaleString()}</td>
+                  <td>
+                    {trade.closed_at === null && (
+                      <CloseTradeForm
+                        trade={trade}
+                        onClosed={(updated) =>
+                          setTrades((prev) => prev.map((t) => (t.id === updated.id ? updated : t)))
+                        }
+                      />
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

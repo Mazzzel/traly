@@ -1,3 +1,5 @@
+import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -70,3 +72,26 @@ def delete_trade(
     trade = _get_owned_trade(trade_id, db, user)
     db.delete(trade)
     db.commit()
+
+
+@router.post("/{trade_id}/close", response_model=schemas.TradeOut)
+def close_trade(
+    trade_id: int,
+    payload: schemas.TradeClose,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(require_active_user),
+):
+    trade = _get_owned_trade(trade_id, db, user)
+    if trade.closed_at is not None:
+        raise HTTPException(status_code=400, detail="Trade already closed")
+
+    trade.exit_price = payload.exit_price
+    trade.closed_at = payload.closed_at or datetime.datetime.now(datetime.timezone.utc)
+    if trade.direction == models.TradeDirection.BUY:
+        trade.pnl = (payload.exit_price - float(trade.entry_price)) * float(trade.size)
+    else:
+        trade.pnl = (float(trade.entry_price) - payload.exit_price) * float(trade.size)
+
+    db.commit()
+    db.refresh(trade)
+    return trade

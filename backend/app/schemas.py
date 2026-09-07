@@ -46,6 +46,28 @@ class TradeOut(TradeBase):
     id: int
 
 
+class TradeClose(BaseModel):
+    exit_price: float
+    closed_at: datetime.datetime | None = None
+
+
+class EquityPoint(BaseModel):
+    closed_at: datetime.datetime
+    cumulative_pnl: float
+
+
+class AccountStats(BaseModel):
+    total_trades: int
+    closed_trades: int
+    win_rate: float | None
+    profit_factor: float | None
+    avg_win: float | None
+    avg_loss: float | None
+    best_trade: float | None
+    worst_trade: float | None
+    equity_curve: list[EquityPoint]
+
+
 class LoginRequest(BaseModel):
     email: str
     password: str

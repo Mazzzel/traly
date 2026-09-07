@@ -32,6 +32,23 @@ export interface User {
   is_admin: boolean
 }
 
+export interface EquityPoint {
+  closed_at: string
+  cumulative_pnl: number
+}
+
+export interface AccountStats {
+  total_trades: number
+  closed_trades: number
+  win_rate: number | null
+  profit_factor: number | null
+  avg_win: number | null
+  avg_loss: number | null
+  best_trade: number | null
+  worst_trade: number | null
+  equity_curve: EquityPoint[]
+}
+
 export type NewAccount = Omit<Account, 'id'>
 export type NewTrade = Omit<Trade, 'id'>
 
@@ -88,3 +105,11 @@ export const createAccount = (account: NewAccount) =>
 export const fetchTrades = () => request<Trade[]>('/trades/')
 export const createTrade = (trade: NewTrade) =>
   request<Trade>('/trades/', { method: 'POST', body: JSON.stringify(trade) })
+export const closeTrade = (tradeId: number, exitPrice: number, closedAt?: string) =>
+  request<Trade>(`/trades/${tradeId}/close`, {
+    method: 'POST',
+    body: JSON.stringify({ exit_price: exitPrice, closed_at: closedAt ?? null }),
+  })
+
+export const fetchAccountStats = (accountId: number) =>
+  request<AccountStats>(`/accounts/${accountId}/stats`)
