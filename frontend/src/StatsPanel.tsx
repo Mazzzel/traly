@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { fetchAccountStats, fetchOverallStats, type Account, type AccountStats, type Trade } from './api'
 import { EquityChart } from './EquityChart'
 
-const ALL_ACCOUNTS = 'all'
+export const ALL_ACCOUNTS = 'all'
 
 function formatMoney(value: number | null): string {
   if (value === null) return '—'
@@ -35,8 +35,17 @@ function StatTile({
   )
 }
 
-export function StatsPanel({ accounts, trades }: { accounts: Account[]; trades: Trade[] }) {
-  const [scope, setScope] = useState<string>(ALL_ACCOUNTS)
+export function StatsPanel({
+  accounts,
+  trades,
+  scope,
+  onScopeChange,
+}: {
+  accounts: Account[]
+  trades: Trade[]
+  scope: string
+  onScopeChange: (scope: string) => void
+}) {
   const [stats, setStats] = useState<AccountStats | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -56,7 +65,7 @@ export function StatsPanel({ accounts, trades }: { accounts: Account[]; trades: 
       {error && <p role="alert">Erreur: {error}</p>}
       <label>
         Compte
-        <select value={scope} onChange={(e) => setScope(e.target.value)}>
+        <select value={scope} onChange={(e) => onScopeChange(e.target.value)}>
           <option value={ALL_ACCOUNTS}>Tous les comptes</option>
           {accounts.map((account) => (
             <option key={account.id} value={account.id}>

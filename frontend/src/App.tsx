@@ -16,7 +16,7 @@ import { ChangePasswordPage } from './ChangePasswordPage'
 import { NewAccountForm } from './NewAccountForm'
 import { NewTradeForm } from './NewTradeForm'
 import { CloseTradeForm } from './CloseTradeForm'
-import { StatsPanel } from './StatsPanel'
+import { StatsPanel, ALL_ACCOUNTS } from './StatsPanel'
 import './App.css'
 
 type AuthState = 'loading' | 'anonymous' | 'must-change-password' | 'authenticated'
@@ -26,6 +26,7 @@ function App() {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [trades, setTrades] = useState<Trade[]>([])
   const [symbolSpecs, setSymbolSpecs] = useState<SymbolSpec[]>([])
+  const [statsScope, setStatsScope] = useState<string>(ALL_ACCOUNTS)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -65,6 +66,9 @@ function App() {
     return <ChangePasswordPage onChanged={() => setAuthState('authenticated')} />
   }
 
+  const visibleTrades =
+    statsScope === ALL_ACCOUNTS ? trades : trades.filter((t) => String(t.account_id) === statsScope)
+
   return (
     <main>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -93,12 +97,12 @@ function App() {
         />
       </section>
 
-      <StatsPanel accounts={accounts} trades={trades} />
+      <StatsPanel accounts={accounts} trades={trades} scope={statsScope} onScopeChange={setStatsScope} />
 
       <section>
         <h2>Trades</h2>
-        {trades.length === 0 && <p>Aucun trade enregistré pour le moment.</p>}
-        {trades.length > 0 && (
+        {visibleTrades.length === 0 && <p>Aucun trade enregistré pour le moment.</p>}
+        {visibleTrades.length > 0 && (
           <table>
             <thead>
               <tr>
@@ -112,7 +116,7 @@ function App() {
               </tr>
             </thead>
             <tbody>
-              {trades.map((trade) => (
+              {visibleTrades.map((trade) => (
                 <tr key={trade.id}>
                   <td>{trade.symbol}</td>
                   <td>{trade.direction}</td>
