@@ -69,6 +69,17 @@ class AccountStats(BaseModel):
     equity_curve: list[EquityPoint]
 
 
+class SymbolSpecUpsert(BaseModel):
+    symbol: str
+    contract_size: float
+
+
+class SymbolSpecOut(SymbolSpecUpsert):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+
+
 class LoginRequest(BaseModel):
     email: str
     password: str

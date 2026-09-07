@@ -1,7 +1,7 @@
 import datetime
 import enum
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Numeric, String
+from sqlalchemy import DateTime, Enum, ForeignKey, Numeric, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -26,6 +26,22 @@ class User(Base):
     )
 
     accounts: Mapped[list["Account"]] = relationship(back_populates="user")
+    symbol_specs: Mapped[list["SymbolSpec"]] = relationship(back_populates="user")
+
+
+class SymbolSpec(Base):
+    """Taille de contrat par symbole (ex: 100 oz/lot pour XAUUSD), pour calculer
+    automatiquement le PnL: (sortie - entrée) * taille * contract_size."""
+
+    __tablename__ = "symbol_specs"
+    __table_args__ = (UniqueConstraint("user_id", "symbol", name="uq_symbol_specs_user_symbol"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    symbol: Mapped[str] = mapped_column(String(20))
+    contract_size: Mapped[float] = mapped_column(Numeric(14, 4))
+
+    user: Mapped["User"] = relationship(back_populates="symbol_specs")
 
 
 class Account(Base):

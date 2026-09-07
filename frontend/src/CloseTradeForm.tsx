@@ -1,34 +1,43 @@
 import { useState } from 'react'
-import { closeTrade, type Trade } from './api'
+import { closeTrade, upsertSymbolSpec, type SymbolSpec, type Trade } from './api'
 
-function suggestedPnl(trade: Trade, exitPrice: number): number {
+function computePnl(trade: Trade, exitPrice: number, contractSize: number): number {
   const diff = trade.direction === 'buy' ? exitPrice - trade.entry_price : trade.entry_price - exitPrice
-  return Math.round(diff * trade.size * 100) / 100
+  return Math.round(diff * trade.size * contractSize * 100) / 100
 }
 
 export function CloseTradeForm({
   trade,
+  symbolSpecs,
+  onSpecSaved,
   onClosed,
 }: {
   trade: Trade
+  symbolSpecs: SymbolSpec[]
+  onSpecSaved: (spec: SymbolSpec) => void
   onClosed: (trade: Trade) => void
 }) {
+  const knownSpec = symbolSpecs.find((s) => s.symbol === trade.symbol)
+
   const [exitPrice, setExitPrice] = useState('')
+  const [contractSize, setContractSize] = useState(String(knownSpec?.contract_size ?? 1))
   const [pnl, setPnl] = useState('')
   const [pnlTouched, setPnlTouched] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  function handleExitPriceChange(value: string) {
-    setExitPrice(value)
-    if (!pnlTouched && value !== '') {
-      setPnl(String(suggestedPnl(trade, Number(value))))
-    }
+  function recomputeSuggestion(nextExitPrice: string, nextContractSize: string) {
+    if (pnlTouched || nextExitPrice === '') return
+    setPnl(String(computePnl(trade, Number(nextExitPrice), Number(nextContractSize) || 0)))
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     try {
+      if (!knownSpec || Number(contractSize) !== knownSpec.contract_size) {
+        const spec = await upsertSymbolSpec(trade.symbol, Number(contractSize))
+        onSpecSaved(spec)
+      }
       const updated = await closeTrade(trade.id, Number(exitPrice), Number(pnl))
       onClosed(updated)
     } catch (err) {
@@ -37,21 +46,39 @@ export function CloseTradeForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'inline-flex', gap: '0.5rem', alignItems: 'center' }}>
+    <form onSubmit={handleSubmit} style={{ display: 'inline-flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
       {error && <span role="alert">{error}</span>}
       <input
         type="number"
         step="0.00001"
         placeholder="Prix de sortie"
         value={exitPrice}
-        onChange={(e) => handleExitPriceChange(e.target.value)}
+        onChange={(e) => {
+          setExitPrice(e.target.value)
+          recomputeSuggestion(e.target.value, contractSize)
+        }}
         required
         style={{ width: '8rem' }}
       />
+      {!knownSpec && (
+        <input
+          type="number"
+          step="0.0001"
+          title={`Taille de contrat pour ${trade.symbol} (ex: 100 pour XAUUSD, 100000 pour une paire forex, 1 pour une action/crypto). Enregistrée pour la prochaine fois.`}
+          placeholder="Taille contrat"
+          value={contractSize}
+          onChange={(e) => {
+            setContractSize(e.target.value)
+            recomputeSuggestion(exitPrice, e.target.value)
+          }}
+          required
+          style={{ width: '7rem' }}
+        />
+      )}
       <input
         type="number"
         step="0.01"
-        title="PnL réel (issu de ton broker) — une suggestion est calculée automatiquement, corrige-la si besoin"
+        title="PnL réel — calculé automatiquement, corrige-le si besoin"
         placeholder="PnL réel"
         value={pnl}
         onChange={(e) => {

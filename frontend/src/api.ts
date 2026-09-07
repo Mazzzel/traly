@@ -49,6 +49,12 @@ export interface AccountStats {
   equity_curve: EquityPoint[]
 }
 
+export interface SymbolSpec {
+  id: number
+  symbol: string
+  contract_size: number
+}
+
 export type NewAccount = Omit<Account, 'id'>
 export type NewTrade = Omit<Trade, 'id'>
 
@@ -117,3 +123,10 @@ export const deleteTrade = (tradeId: number) =>
 export const fetchAccountStats = (accountId: number) =>
   request<AccountStats>(`/accounts/${accountId}/stats`)
 export const fetchOverallStats = () => request<AccountStats>('/accounts/stats')
+
+export const fetchSymbolSpecs = () => request<SymbolSpec[]>('/symbol-specs/')
+export const upsertSymbolSpec = (symbol: string, contractSize: number) =>
+  request<SymbolSpec>('/symbol-specs/', {
+    method: 'PUT',
+    body: JSON.stringify({ symbol, contract_size: contractSize }),
+  })

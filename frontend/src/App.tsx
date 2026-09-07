@@ -4,9 +4,11 @@ import {
   deleteTrade,
   fetchAccounts,
   fetchMe,
+  fetchSymbolSpecs,
   fetchTrades,
   getToken,
   type Account,
+  type SymbolSpec,
   type Trade,
 } from './api'
 import { LoginPage } from './LoginPage'
@@ -23,6 +25,7 @@ function App() {
   const [authState, setAuthState] = useState<AuthState>('loading')
   const [accounts, setAccounts] = useState<Account[]>([])
   const [trades, setTrades] = useState<Trade[]>([])
+  const [symbolSpecs, setSymbolSpecs] = useState<SymbolSpec[]>([])
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -37,10 +40,11 @@ function App() {
 
   useEffect(() => {
     if (authState !== 'authenticated') return
-    Promise.all([fetchAccounts(), fetchTrades()])
-      .then(([accounts, trades]) => {
+    Promise.all([fetchAccounts(), fetchTrades(), fetchSymbolSpecs()])
+      .then(([accounts, trades, specs]) => {
         setAccounts(accounts)
         setTrades(trades)
+        setSymbolSpecs(specs)
       })
       .catch((err) => setError(err.message))
   }, [authState])
@@ -122,6 +126,13 @@ function App() {
                     {trade.closed_at === null && (
                       <CloseTradeForm
                         trade={trade}
+                        symbolSpecs={symbolSpecs}
+                        onSpecSaved={(spec) =>
+                          setSymbolSpecs((prev) => [
+                            ...prev.filter((s) => s.symbol !== spec.symbol),
+                            spec,
+                          ])
+                        }
                         onClosed={(updated) =>
                           setTrades((prev) => prev.map((t) => (t.id === updated.id ? updated : t)))
                         }
