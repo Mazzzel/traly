@@ -1,0 +1,14 @@
+[Unit]
+Description=Telegram bot — commande /temp à la demande
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/temp-monitor.env
+ExecStart=/usr/bin/python3 /home/tradingbot/traly/monitoring/temp_bot.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
