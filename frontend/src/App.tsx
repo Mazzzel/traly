@@ -1,5 +1,14 @@
 import { useEffect, useState } from 'react'
-import { clearToken, fetchAccounts, fetchMe, fetchTrades, getToken, type Account, type Trade } from './api'
+import {
+  clearToken,
+  deleteTrade,
+  fetchAccounts,
+  fetchMe,
+  fetchTrades,
+  getToken,
+  type Account,
+  type Trade,
+} from './api'
 import { LoginPage } from './LoginPage'
 import { ChangePasswordPage } from './ChangePasswordPage'
 import { NewAccountForm } from './NewAccountForm'
@@ -109,7 +118,7 @@ function App() {
                     {trade.pnl ?? '—'}
                   </td>
                   <td>{new Date(trade.opened_at).toLocaleString()}</td>
-                  <td>
+                  <td style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     {trade.closed_at === null && (
                       <CloseTradeForm
                         trade={trade}
@@ -118,6 +127,16 @@ function App() {
                         }
                       />
                     )}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!confirm(`Supprimer le trade ${trade.symbol} ?`)) return
+                        await deleteTrade(trade.id)
+                        setTrades((prev) => prev.filter((t) => t.id !== trade.id))
+                      }}
+                    >
+                      Supprimer
+                    </button>
                   </td>
                 </tr>
               ))}

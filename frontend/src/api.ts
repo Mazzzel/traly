@@ -105,11 +105,14 @@ export const createAccount = (account: NewAccount) =>
 export const fetchTrades = () => request<Trade[]>('/trades/')
 export const createTrade = (trade: NewTrade) =>
   request<Trade>('/trades/', { method: 'POST', body: JSON.stringify(trade) })
-export const closeTrade = (tradeId: number, exitPrice: number, closedAt?: string) =>
+export const closeTrade = (tradeId: number, exitPrice: number, pnl: number, closedAt?: string) =>
   request<Trade>(`/trades/${tradeId}/close`, {
     method: 'POST',
-    body: JSON.stringify({ exit_price: exitPrice, closed_at: closedAt ?? null }),
+    body: JSON.stringify({ exit_price: exitPrice, pnl, closed_at: closedAt ?? null }),
   })
+
+export const deleteTrade = (tradeId: number) =>
+  request<void>(`/trades/${tradeId}`, { method: 'DELETE' })
 
 export const fetchAccountStats = (accountId: number) =>
   request<AccountStats>(`/accounts/${accountId}/stats`)

@@ -86,11 +86,8 @@ def close_trade(
         raise HTTPException(status_code=400, detail="Trade already closed")
 
     trade.exit_price = payload.exit_price
+    trade.pnl = payload.pnl
     trade.closed_at = payload.closed_at or datetime.datetime.now(datetime.timezone.utc)
-    if trade.direction == models.TradeDirection.BUY:
-        trade.pnl = (payload.exit_price - float(trade.entry_price)) * float(trade.size)
-    else:
-        trade.pnl = (float(trade.entry_price) - payload.exit_price) * float(trade.size)
 
     db.commit()
     db.refresh(trade)

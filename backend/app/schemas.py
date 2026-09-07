@@ -48,6 +48,7 @@ class TradeOut(TradeBase):
 
 class TradeClose(BaseModel):
     exit_price: float
+    pnl: float
     closed_at: datetime.datetime | None = None
 
 
